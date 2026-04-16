@@ -1,121 +1,135 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
+import { BrowserRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
+import "./App.css";
+import type { AuthUser } from "./services/auth";
+import { clearToken, fetchCurrentUser, loadToken } from "./services/auth";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import ProfilePage from "./pages/ProfilePage";
+import Register from "./pages/Register";
+import UsersPage from "./pages/UsersPage";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function bootstrap() {
+      const token = loadToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const currentUser = await fetchCurrentUser();
+        setUser(currentUser);
+      } catch {
+        clearToken();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void bootstrap();
+  }, []);
+
+  const handleLogout = () => {
+    clearToken();
+    setUser(null);
+  };
+
+  const canManageUsers = user?.role === "Admin" || user?.role === "Manager";
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-card">Loading workspace...</div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <div className="app-frame">
+        <header className="app-header">
+          <div className="brand">
+            <p className="eyebrow">Purple Merit</p>
+            <h1>MERN User Management</h1>
+          </div>
+          <nav className="header-actions">
+            {user ? (
+              <>
+                <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                  Dashboard
+                </NavLink>
+                {canManageUsers ? (
+                  <NavLink to="/users" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                    Users
+                  </NavLink>
+                ) : null}
+                <NavLink to="/profile" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                  My Profile
+                </NavLink>
+                <button type="button" className="btn btn-secondary" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                  Login
+                </NavLink>
+                <NavLink to="/register" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+                  Register
+                </NavLink>
+              </>
+            )}
+          </nav>
+        </header>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+            <Route
+              path="/login"
+              element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={setUser} />}
+            />
+            <Route
+              path="/register"
+              element={user ? <Navigate to="/dashboard" replace /> : <Register onRegister={setUser} />}
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute user={user}>
+                  <Dashboard user={user!} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute user={user} allowedRoles={["Admin", "Manager"]}>
+                  <UsersPage user={user!} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute user={user}>
+                  <ProfilePage user={user!} onProfileUpdated={setUser} />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
