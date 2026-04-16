@@ -38,10 +38,10 @@ export default function Register({ onRegister }: RegisterProps) {
       <div className="auth-hero">
         <p className="eyebrow">Register</p>
         <h1>Create your account</h1>
-        <p>Fill in the details below.</p>
+        {/* <p>Fill in the details below.</p> */}
       </div>
       <div className="auth-card">
-        <h2>Create your account</h2>
+        {/* <h2>Create your account</h2> */}
         <form onSubmit={handleSubmit} className="form-grid">
           <label>
             Full name
@@ -84,7 +84,7 @@ export default function Register({ onRegister }: RegisterProps) {
             {submitting ? "Creating account..." : "Register"}
           </button>
         </form>
-        <p className="form-footnote">
+        <p className="form-footnote px-1 py-2">
           Already registered? <Link to="/login">Login</Link>
         </p>
       </div>

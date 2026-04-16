@@ -36,10 +36,10 @@ export default function Login({ onLogin }: LoginProps) {
       <div className="auth-hero">
         <p className="eyebrow">Login</p>
         <h1>Welcome back</h1>
-        <p>Sign in to continue.</p>
+        {/* <p>Sign in to continue.</p> */}
       </div>
       <div className="auth-card">
-        <h2>Login</h2>
+        {/* <h2>Login</h2> */}
         <form onSubmit={handleSubmit} className="form-grid">
           <label>
             Email or username
@@ -63,8 +63,8 @@ export default function Login({ onLogin }: LoginProps) {
             {submitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
-        <p className="form-footnote">
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+        <p className="form-footnote px-1 py-2">
+          Don't have an account? <Link to="/register">Create one</Link>
         </p>
       </div>
     </section>

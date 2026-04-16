@@ -63,10 +63,10 @@ export default function Dashboard({ user }: DashboardProps) {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Quick links</p>
-            <h2>Open what you need.</h2>
+            <h2 className="">Open what you need.</h2>
           </div>
         </div>
-        <div className="action-grid">
+        <div className="action-grid my-2">
           {cards.map((card) => (
             <Link key={card.title} to={card.to} className="action-card">
               <h3>{card.title}</h3>
